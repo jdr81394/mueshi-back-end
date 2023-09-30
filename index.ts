@@ -84,14 +84,14 @@ let listingDataArray: ListingData[] = [
         name: 'Product A',
         price: 50,
         highestBid: 1,
-        bids: [1, 2],
+        bids: [0, 1, 2, 9],
     },
     {
         id: 1,
         ownerId: 0,
         name: 'Product B',
         price: 60,
-        bids: [3],
+        bids: [3, 10],
         highestBid: 3
     },
     {
@@ -99,7 +99,71 @@ let listingDataArray: ListingData[] = [
         ownerId: 1,
         name: 'Product C',
         price: 70,
-        bids: [3, 4],
+        bids: [4],
+        highestBid: null
+    },
+    {
+        id: 3,
+        ownerId: 0,
+        name: 'Product D',
+        price: 4320,
+        bids: [5, 6, 7, 8],
+        highestBid: null,
+    },
+    {
+        id: 4,
+        ownerId: 0,
+        name: 'Product E',
+        price: 655,
+        bids: [],
+        highestBid: null,
+    },
+    {
+        id: 5,
+        ownerId: 0,
+        name: 'Product F',
+        price: 90,
+        bids: [],
+        highestBid: null,
+    },
+    {
+        id: 6,
+        ownerId: 0,
+        name: 'Product G',
+        price: 90,
+        bids: [],
+        highestBid: null,
+    },
+    {
+        id: 7,
+        ownerId: 1,
+        name: 'Product H',
+        price: 70,
+        bids: [],
+        highestBid: null
+    },
+    {
+        id: 8,
+        ownerId: 1,
+        name: 'Product I',
+        price: 70,
+        bids: [],
+        highestBid: null
+    },
+    {
+        id: 9,
+        ownerId: 1,
+        name: 'Product J',
+        price: 70,
+        bids: [],
+        highestBid: null
+    },
+    {
+        id: 10,
+        ownerId: 1,
+        name: 'Product K',
+        price: 70,
+        bids: [],
         highestBid: null
     },
 ];
@@ -147,6 +211,41 @@ let bidDataArray: BidData[] = [
         listingId: 3,
         price: 50,
         status: Status.Denied,
+    },
+    {
+        id: 6,
+        bidderId: 4,
+        listingId: 3,
+        price: 25,
+        status: Status.InProgress
+    },
+    {
+        id: 7,
+        bidderId: 4,
+        listingId: 3,
+        price: 34,
+        status: Status.InProgress
+    },
+    {
+        id: 8,
+        bidderId: 2,
+        listingId: 3,
+        price: 54,
+        status: Status.InProgress
+    },
+    {
+        id: 9,
+        bidderId: 2,
+        listingId: 0,
+        price: 954,
+        status: Status.InProgress
+    },
+    {
+        id: 10,
+        bidderId: 3,
+        listingId: 1,
+        price: 700,
+        status: Status.InProgress,
     },
 ] as BidData[];
 
