@@ -8,7 +8,10 @@ const app = express();
 const port = 3001;
 
 app.use(bodyParser.json());
-app.use(cors);
+app.use(bodyParser.urlencoded({ extended: false }));
+
+app.use(cors());
+
 
 export enum Status {
     Denied,
@@ -35,11 +38,12 @@ export interface ListingData {
     ownerId: number,
     name: string,
     price: number,
-    highestBid: number,
-    bids: number[]
+    highestBid: number | null,
+    bids: number[],
+    accepted?: boolean
 }
 
-const peopleDataArray: PersonData[] = [
+let peopleDataArray: PersonData[] = [
     {
         id: 0,
         name: 'Alice',
@@ -73,7 +77,7 @@ const peopleDataArray: PersonData[] = [
 ];
 
 // Create 10 objects and put them into an array
-const listingDataArray: ListingData[] = [
+let listingDataArray: ListingData[] = [
     {
         id: 0,
         ownerId: 0,
@@ -95,13 +99,13 @@ const listingDataArray: ListingData[] = [
         ownerId: 1,
         name: 'Product C',
         price: 70,
-        bids: [],
-        highestBid: [],
+        bids: [3, 4],
+        highestBid: null
     },
 ];
 
 // Dummy data for BidData array
-const bidDataArray: BidData[] = [
+let bidDataArray: BidData[] = [
     {
         id: 0,
         bidderId: 1,
@@ -126,14 +130,14 @@ const bidDataArray: BidData[] = [
     {
         id: 3,
         bidderId: 3,
-        listingId: 2,
+        listingId: 1,
         price: 70,
         status: Status.InProgress,
     },
     {
         id: 4,
         bidderId: 3,
-        listingId: 3,
+        listingId: 2,
         price: 45,
         status: Status.Accepted,
     },
@@ -144,7 +148,7 @@ const bidDataArray: BidData[] = [
         price: 50,
         status: Status.Denied,
     },
-];
+] as BidData[];
 
 
 
@@ -152,6 +156,143 @@ app.get('/', (req, res) => {
     // res.send('Hello, API!');
     res.json(listingDataArray);
 });
+
+app.get("/getPeople", (req, res) => {
+
+    res.json(peopleDataArray[0]);
+})
+
+app.get('/getListing', (req, res) => {
+    const id: number = req.query.id as unknown as number;
+
+    const listing = listingDataArray.find((data) => data.id == id);
+    if (listing === undefined) res.status(404).json({});
+
+    let bids = [];
+
+    if (listing?.bids.length !== undefined)
+        for (let i = 0; i < listing?.bids?.length; i++) {
+            const bidId = listing.bids[i];
+            // Get each bid id
+            let bid: any = bidDataArray.find((data) => data.id === bidId);
+            if (bid === undefined) continue;
+
+            const person: any = peopleDataArray.find((data) => data.id === bid.bidderId);
+            bid.bidder = person;
+            bids.push(bid);
+        }
+
+
+
+    res.status(200).json({
+        listing,
+        bids
+    })
+
+});
+
+app.post("/postListing", (req, res) => {
+    try {
+        const { name, price, ownerId } = req.body;
+
+        const id = listingDataArray[listingDataArray.length - 1].id + 1;
+
+        const newListing: ListingData = {
+            name,
+            price,
+            ownerId,
+            id,
+            bids: [],
+            highestBid: null
+        }
+
+        listingDataArray.push(newListing)
+
+        res.status(200).json(newListing);
+
+
+    } catch (e) {
+        console.error("error while adding into listing array: ", e);
+        res.status(300).json({})
+
+    }
+})
+
+app.put("/putListing", (req, res) => {
+    try {
+
+
+        const { name, price, id } = req.body;
+
+        const index = listingDataArray.findIndex((data) => data.id == id);
+
+        if (index === -1) res.status(300).json({});
+
+        listingDataArray[index].name = name;
+        listingDataArray[index].price = price;
+
+        res.status(200).json(listingDataArray[index]);
+
+    } catch (err) {
+
+    }
+})
+
+app.put("/acceptBid", (req, res) => {
+
+    const { id } = req.body;
+
+    let bidIndex = bidDataArray.findIndex((data) => data.id == id);
+
+    if (bidIndex === -1) res.status(300).json({});
+
+    bidDataArray[bidIndex].status = Status.Accepted;
+
+    const listingId = bidDataArray[bidIndex].listingId;
+
+    let listingIndex = listingDataArray.findIndex((data) => data.id == listingId);
+
+    if (listingIndex === -1) res.status(300).json({});
+
+    listingDataArray[listingIndex].accepted = true;
+
+    const personId = listingDataArray[listingIndex].ownerId;
+
+    const personIndex = peopleDataArray.findIndex((data) => data.id === personId);
+
+    peopleDataArray[personIndex].totalSales += bidDataArray[bidIndex].price;
+
+    res.status(200).json(peopleDataArray[personIndex]);
+
+})
+
+app.delete("/deleteListing", (req, res) => {
+
+    const { id }: any = req.query;
+
+
+
+
+
+
+    const index = listingDataArray.findIndex((data) => {
+        return data.id == id
+    }
+    );
+
+
+
+    listingDataArray = listingDataArray.slice(0, index).concat(listingDataArray.slice(index + 1))
+
+    // should delete it out of persons listings array as well..... 
+    // also all bids associated with it sould be deleted
+
+    res.status(200).json({});
+
+
+
+
+})
 
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
